@@ -1,17 +1,17 @@
 echo "@verify_rabbit-s.sh"
 echo "List rabbit-s/home/crl..."
-echo "=================================================="
+echo "--------------------------------------------------"
 docker exec rabbit-s ls "home/crl"&&
 echo "=================================================="
 echo "List rabbit-s/home/rabbitmq-certs/..."
-echo "=================================================="
+echo "--------------------------------------------------"
 docker exec rabbit-s ls "home/rabbitmq-certs/"&&
 echo "=================================================="
 echo "Display rabbit-s/etc/rabbitmq/rabbitmq.conf..."
-echo "=================================================="
+echo "--------------------------------------------------"
 docker exec rabbit-s cat /etc/rabbitmq/rabbitmq.conf&&
 echo "=================================================="
 echo "Display rabbit-s/etc/rabbitmq/advanced.config..."
-echo "=================================================="
+echo "--------------------------------------------------"
 docker exec rabbit-s cat /etc/rabbitmq/advanced.config&&
 echo "=================================================="
