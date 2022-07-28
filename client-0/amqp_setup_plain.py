@@ -2,15 +2,13 @@ import pika
 import ssl
 import logging
 
-from pika.credentials import ExternalCredentials
-
 logging.basicConfig(level=logging.INFO)
 
 context = ssl.create_default_context(cafile="ca-chain.cert.pem") 
 
-context.load_cert_chain("client-2.cert.pem", "client-2.key.pem")
+context.load_cert_chain("client-0.cert.pem", "client-0.key.pem")
 
-credentials = ExternalCredentials()
+credentials = pika.PlainCredentials('user', 'test123!')
 
 ssl_options = pika.SSLOptions(context, "localhost")
 
