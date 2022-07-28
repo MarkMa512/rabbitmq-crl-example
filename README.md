@@ -1,13 +1,16 @@
 # RabbitMQ Certificate Revocation List (CRL) Mechanism
 
 ## About the Project 
-This is my attempt in implementing CRL Mechanism on RabbitMQ to block client with certificate that has been revoked. My approach was to use the advanced.config file and erlang's native support for CRL. 
+This is my attempt in implementing CRL Mechanism on RabbitMQ to block client with certificate that has been revoked. My approach was to use the `advanced.config` file and erlang's native support for CRL. 
 
-## Directories
+### Directories
 - `/broker` contains shell scripts, server certificates, crl file, `rabbitmq.conf` and `advanced.config` files needed to set up the rabbitmq container. 
-- `/cert-gen` containes OpenSSL config files and shell scripts that automates the certificates and crl generation process 
+- `/cert-gen` contains OpenSSL config files and shell scripts that automates the certificates and crl generation process 
 - `/client-0` a python client that connect to the broker via SSL with client-0 certificate 
-- `/client-2` a python client that connect to the broker via SSL with client-2 certifictae (revoked)
+- `/client-2` a python client that connect to the broker via SSL with client-2 certificate (**revoked**)
+
+## Aim 
+The aim for this project is to use CRL mechanism to block **client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
 
 ## Prerequisite: 
 This project is tested on: 
@@ -18,9 +21,8 @@ This project is tested on:
 
 ## Geting Started 
 
-### Start the broker 
+### Start the RabbitMQ broker 
 1. Clone the repository to your computer: 
-
 ```
 git clone https://github.com/MarkMa512/rabbitmq-crl-example.git
 ```
@@ -43,7 +45,7 @@ sh apply_useraccess.sh
 ### Reload certificates/crl/configuration files and reset the broker 
 If you have modified the certificates/crl/configuration files, please run the following script to reset the broker
 ```
-sh reload_reset.sh 
+sh reload_reset_rabbit-s.sh 
 ```
 
 ### Verify the configuration files and certificate location inside the broker 
@@ -54,28 +56,76 @@ sh verify_rabbit-s.sh
 
 ### Start the client 
 1. Enter the client directory: 
+```
+cd client-0
+```
 
-2. 
+2. Run the python client: 
+```
+python activity_log.py
+```
+
+Note: you may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation conffiguration. 
 
 ## Certificate Structure and Generation
-The certificates are self-signed for testing purposes only. 
+
+The certificates are **self-signed** for **testing purposes only**. 
 
 The certificate generation are done using a series of shell script in `/cert-gen` folder, in the following hierachy: 
 
 ROOT CA
   - IntermediateClient CA
-    - IssuingClient CA (CRL generating CA)
+    - IssuingClient CA (**CRL generating CA**)
       - client-0  
       - client-1  
-      - client-2  
+      - client-2 (**revoked**)
   - Intermediate Server CA 
     - IssuingServer CA 
       - server 
 
-
+### Generating the certificate
 If you wish to regenerate the certificates to modify things like common name, please follow the following steps: 
 
-1. Modify all the openssl_xxxx.cnf
+1. Modify all the `openssl_xxxx.cnf` at line 10 to that matching your repo path
+```
+dir               = /path/to/the/repo/rabbitmq-crl-example/cert-gen/root/ca
+```
+2. Run the command in the following sequence, and input relevant details when prompted: 
+```
+sh gen_root.sh 
+```
+```
+sh gen_intermediate_server.sh
+```
+```
+sh gen_issuing_server.sh 
+```
+```
+sh gen_intermediate_client.sh 
+```
+```
+sh gen_issuing_client.sh 
+```
+```
+sh gen_client_012.sh
+```
+
+The complete CA chain files, as well as the client/server certificates for the clients and the server are generated automatically at the following directotires: 
+```
+cert-gen\root\ca\intermediate-client\issuing-client\certs
+```
+```
+cert-gen\root\ca\intermediate-client\issuing-server\certs
+```
+
+
+The keys are to be located at: 
+```
+cert-gen\root\ca\intermediate-client\issuing-client\private
+```
+```
+cert-gen\root\ca\intermediate-client\issuing-server\private
+```
 
 
 ## Existing Issue 
@@ -102,7 +152,7 @@ Despite of using the `advanced.config` to enable the CRL checking funtion:
 ].
 ```
 
-`client-2` is still able to connect to broker: 
+`client-2` is **still able to connect to broker**: 
 
 ```
 INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('::1', 5671, 0, 0)
@@ -118,8 +168,14 @@ This is activity_log.py: monitoring routing key '#' in exchange 'logging_topic' 
 
 ```
 
-## Resources 
-I took referrence from the following websites and 
+## Refferences and Acknowlegdment 
+
+A special thank to [Luke Bakken](https://github.com/lukebakken) for his continued guidance and support through discussion [here](https://groups.google.com/g/rabbitmq-users/c/sLXfiBGaKfQ)
+
+The x509 certificate and CRL generation script took referrnce from Jamie Nguyen's comprehensive guide on [OpenSSL Certificate Authority](https://jamielinux.com/docs/openssl-certificate-authority/index.html).
+
+
+I also took referrence from the following websites and repositories: 
 
   - [erl crl example](https://github.com/Vagabond/erl_crl_example)
 
@@ -130,8 +186,3 @@ I took referrence from the following websites and
   - [erlang/otp/ssl_crl_SUITE.erl](https://github.com/erlang/otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl)
 
   - [Kubernetes RabbitMQ Certificate Revocation List](https://greduan.com/blog/2022/02/02/kubernetes-rabbitmq-certificate-revocation-list)
-
-## Acknowledgements 
-A special thank to [Luke Bakken](https://github.com/lukebakken) for his continued guidance and support through discussion [here](https://groups.google.com/g/rabbitmq-users/c/sLXfiBGaKfQ)
-
-The x509 certificate and CRL generation script took referrnce from Jamie Nguyen's comprehensive guide on [OpenSSL Certificate Authority](https://jamielinux.com/docs/openssl-certificate-authority/index.html).
