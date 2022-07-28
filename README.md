@@ -17,14 +17,14 @@ The certificates are self-signed for testing purposes.
 The certificate generation are done using a series of shell script in cert-gen folder, in the following structure: 
 
 ROOT CA
- - IntermediateClient CA
-  - IssuingClient CA 
-   - client-0  
-    - client-1  
-    - client-2  
- - Intermediate Server CA 
-  - IssuingServer CA 
-   - server 
+  - IntermediateClient CA
+    - IssuingClient CA 
+      - client-0  
+      - client-1  
+      - client-2  
+  - Intermediate Server CA 
+    - IssuingServer CA 
+      - server 
 
 ## Existing Issue 
 The CRL machanism insdie RabbitMQ does not seem to be working. 
