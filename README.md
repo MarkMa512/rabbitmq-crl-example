@@ -73,7 +73,7 @@ The certificates are **self-signed** for **testing purposes only**.
 
 The certificate generation are done using a series of shell script in `/cert-gen` folder, in the following hierachy: 
 
-ROOT CA
+**ROOT CA**
   - IntermediateClient CA
     - IssuingClient CA (**CRL generating CA**)
       - client-0  
