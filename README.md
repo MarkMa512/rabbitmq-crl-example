@@ -10,7 +10,7 @@ This is my attempt in implementing CRL Mechanism on RabbitMQ to block client wit
 - `/client-2` a python client that connect to the broker via SSL with client-2 certificate (**revoked**)
 
 ## Aim 
-The aim for this project is to use CRL mechanism to block **client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
+The aim for this project is to use CRL mechanism to **block client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
 
 ## Prerequisite: 
 This project is tested on: 
@@ -65,7 +65,7 @@ cd client-0
 python activity_log.py
 ```
 
-Note: you may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation conffiguration. 
+Note: you may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
 
 ## Certificate Structure and Generation
 
@@ -101,6 +101,9 @@ sh gen_intermediate_server.sh
 sh gen_issuing_server.sh 
 ```
 ```
+sh gen_server.sh 
+```
+```
 sh gen_intermediate_client.sh 
 ```
 ```
@@ -119,7 +122,7 @@ cert-gen\root\ca\intermediate-client\issuing-server\certs
 ```
 
 
-The keys are to be located at: 
+The keys are located at: 
 ```
 cert-gen\root\ca\intermediate-client\issuing-client\private
 ```
@@ -132,7 +135,7 @@ cert-gen\root\ca\intermediate-client\issuing-server\private
 
 Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, this mechanism does not seem to be working. 
 
-The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh`. 
+The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
 
 Despite of using the `advanced.config` to enable the CRL checking funtion: 
 
@@ -168,7 +171,7 @@ This is activity_log.py: monitoring routing key '#' in exchange 'logging_topic' 
 
 ```
 
-## Refferences and Acknowlegdment 
+## References and Acknowlegdment 
 
 A special thank to [Luke Bakken](https://github.com/lukebakken) for his continued guidance and support through discussion [here](https://groups.google.com/g/rabbitmq-users/c/sLXfiBGaKfQ)
 
