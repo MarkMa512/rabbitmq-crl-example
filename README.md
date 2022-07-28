@@ -16,7 +16,8 @@ This project is done and tested on
 The certificates are self-signed for testing purposes. 
 The certificate generation are done using a series of shell script in cert-gen folder, in the following structure: 
 
-ROOT CA 
+ROOT CA
+
     - IntermediateClient CA  
         - IssuingClient CA 
             - client-0 Certificate 
