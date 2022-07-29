@@ -295,39 +295,7 @@ Both instances are able to connect to the broker simultaneously. The logs of the
 
 The above test was done using PLAIN authentication mechanism, the behaviour is very similar where by 2 instances of client-0 `activity_log_plain.py` can connect to the broker simoutaneously. 
 
-3. Attempting to modify the `advanced.config` files to (removing the "]}" in line 9): 
-
-```
-[
-  {rabbit, [
-     {ssl_listeners, [5671]},
-     {ssl_options, [
-                    {cacertfile,"/home/rabbitmq-certs/test-certs/ca-chain.cert.pem"},
-                    {certfile,"/home/rabbitmq-certs/test-certs/server.cert.pem"},
-                    {keyfile,"/home/rabbitmq-certs/test-certs/server.key.pem"},
-                    {verify,verify_peer},
-                    {fail_if_no_peer_cert,true}, 
-                    {crl_check, true},
-                    {crl_cache, {ssl_crl_cache, {internal, [{dir, "/home/crl/issuing-client.crl"}]}}}
-   ]}
-].
-```
-
-This would lead to boot failure of RabbitMQ: 
-```
-[error] <0.130.0> Failed to load advanced configuration file "/etc/rabbitmq/advanced.config": 13: syntax error before: '.'
-
-BOOT FAILED
-===========
-[error] <0.130.0> 
-[error] <0.130.0> BOOT FAILED
-[error] <0.130.0> ===========
-[error] <0.130.0> Error during startup: {error,failed_to_read_advanced_configuration_file}
-[error] <0.130.0> 
-Error during startup: {error,failed_to_read_advanced_configuration_file}
-```
-
-4. Attempting to modify the `advanced.config` files on line 12: 
+3. Attempted to modify the `advanced.config` file to that in `advanced_cache.erl`: 
 ```
 [
   {rabbit, [
@@ -451,9 +419,25 @@ This would lead to the following errors in the broker
 [error] <0.812.0>                {significant,false},
 [error] <0.812.0>                {shutdown,infinity},
 [error] <0.812.0>                {child_type,supervisor}]
-[error] <0.812.0> 
+```
+4. Attempted to modify the `advanced.config` file to that in `advanced_hashed.erl`: 
 
 ```
+[
+  {rabbit, [
+     {ssl_listeners, [5671]},
+     {ssl_options, [{cacertfile,"/home/rabbitmq-certs/test-certs/ca-chain.cert.pem"},
+                      {certfile,"/home/rabbitmq-certs/test-certs/server.cert.pem"},
+                      {keyfile,"/home/rabbitmq-certs/test-certs/server.key.pem"},
+                      {verify,verify_peer},
+                      {fail_if_no_peer_cert,true},
+                      {crl_check, true},
+                      {crl_cache, {ssl_crl_hash_dir, {internal, [{dir, "/home/crl/"}]}}}]}
+   ]}
+].
+```
+
+The same error of `Failed to start Ranch listener` will appear. 
 
 ## References and Acknowlegdment 
 
