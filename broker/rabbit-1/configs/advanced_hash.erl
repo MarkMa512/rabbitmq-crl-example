@@ -9,6 +9,7 @@
                       {verify,verify_peer},
                       {fail_if_no_peer_cert,true},
                       {crl_check, true},
-                      {crl_cache, {ssl_crl_hash_dir, {internal, [{dir, "/home/crl/"}]}}}]}
+                      {crl_cache, {ssl_crl_hash_dir, {internal, [{dir, "/home/crl/"}]}}}
+                     ]}
    ]}
 ].
