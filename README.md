@@ -180,7 +180,7 @@ cert-gen\root\ca\intermediate-client\issuing-server\private
 
 Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
 
-The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
+The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. I have also attempted to convert the CRL file from PEM format to DER format as `issuing-client.crl` using commands `covert_crl_pem_to_der.sh` under `cert-gen`. There is no difference. 
 
 Despite of using the `advanced.config` to enable the CRL checking funtion: 
 
