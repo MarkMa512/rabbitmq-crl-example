@@ -105,7 +105,9 @@ python activity_log_plain.py
 Note: 
 
 a. Please run the client according to the the authetication mechanism. 
+
   i. EXTERNAL: `activity_log_external.py`
+
   ii. PLAIN: `activity_log_plain.py`
 
 b. You may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
