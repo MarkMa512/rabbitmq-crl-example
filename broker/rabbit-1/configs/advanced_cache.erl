@@ -1,4 +1,6 @@
-% Reference: https://serverfault.com/questions/752233/rabbitmq-crl-configuration
+% Reference: 
+% https://serverfault.com/questions/752233/rabbitmq-crl-configuration
+% https://github.com/rabbitmq/rabbitmq-server/issues/2338
 [
   {rabbit, [
      {ssl_listeners, [5671]},

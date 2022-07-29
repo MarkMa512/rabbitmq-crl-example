@@ -1,4 +1,6 @@
-% Reference: https://greduan.com/blog/2022/02/02/kubernetes-rabbitmq-certificate-revocation-list
+% Reference: 
+% https://greduan.com/blog/2022/02/02/kubernetes-rabbitmq-certificate-revocation-list
+% https://github.com/rabbitmq/rabbitmq-server/issues/2338
 [
   {rabbit, [
      {ssl_listeners, [5671]},

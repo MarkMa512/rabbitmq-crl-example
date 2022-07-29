@@ -189,6 +189,7 @@ The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, 
 
 Despite of using the `advanced.config` to enable the CRL checking funtion: 
 
+### Test Case 1: using *ssl_crl_cache* and `issuing-client.crl`
 ```
 [
   {rabbit, [
@@ -217,6 +218,63 @@ INFO:pika.adapters.utils.connection_workflow:AMQPConnectionWorkflow - reporting 
 INFO:pika.adapters.blocking_connection:Connection workflow succeeded: <SelectConnection OPEN transport=<pika.adapters.utils.io_services_utils._AsyncSSLTransport object at 0x7f8a6ad88e80> params=<ConnectionParameters host=localhost port=5671 virtual_host=/ ssl=True>>
 INFO:pika.adapters.blocking_connection:Created channel=1
 
+```
+
+### Test Case 2: 
+
+Attempts tp use *ssl_crl_hash_dir*  and `issuing-client.crl`: Both client cannot connect
+
+```
+[
+  {rabbit, [
+     {ssl_listeners, [5671]},
+     {ssl_options, [  
+                      {cacertfile,"/home/rabbitmq-certs/test-certs/ca-chain.cert.pem"},
+                      {certfile,"/home/rabbitmq-certs/test-certs/server.cert.pem"},
+                      {keyfile,"/home/rabbitmq-certs/test-certs/server.key.pem"},
+                      {verify,verify_peer},
+                      {fail_if_no_peer_cert,true},
+                      {crl_check, true},
+                      {crl_cache, {ssl_crl_hash_dir, {internal, [{dir, "/home/crl/"}]}}}
+                     ]}
+   ]}
+].
+```
+
+Broker Output: 
+```
+[notice] <0.1085.0> TLS server: In state wait_cert at ssl_handshake.erl:2077 generated SERVER ALERT: Fatal - Bad Certificate
+[notice] <0.1085.0>  - {bad_crls,no_relevant_crls}
+```
+Client-0: 
+```
+pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
+```
+
+Client-2: 
+```
+pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
+```
+
+### Test Case 3: 
+Attempts tp use *ssl_crl_hash_dir*  and `issuing-client.crl.pem`
+
+
+Broker: 
+```
+[notice] <0.1062.0> TLS server: In state wait_cert at ssl_handshake.erl:2077 generated SERVER ALERT: Fatal - Bad Certificate
+[notice] <0.1062.0>  - {bad_crls,no_relevant_crls}
+
+```
+
+Client-0: 
+```
+pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
+```
+
+Client-2: 
+```
+pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
 ```
 
 ## Other Attempts and Findings
@@ -298,149 +356,6 @@ Both instances are able to connect to the broker simultaneously. The logs of the
 
 The above test was done using PLAIN authentication mechanism, the behaviour is very similar where by 2 instances of client-0 `activity_log_plain.py` can connect to the broker simoutaneously. 
 
-3. Attempted to modify the `advanced.config` file to that in `advanced_cache.erl`: 
-```
-[
-  {rabbit, [
-     {ssl_listeners, [5671]},
-     {ssl_options, [
-                    {cacertfile,"/home/rabbitmq-certs/test-certs/ca-chain.cert.pem"},
-                    {certfile,"/home/rabbitmq-certs/test-certs/server.cert.pem"},
-                    {keyfile,"/home/rabbitmq-certs/test-certs/server.key.pem"},
-                    {verify,verify_peer},
-                    {fail_if_no_peer_cert,true},
-                    {crl_check, true},
-                    {crl_cache, {ssl_crl_cache, {internal, [{dir, "/home/crl/issuing-client.crl.pem"}]}}}
-                  ]}
-   ]}
-].
-```
-This would lead to the following errors in the broker
-
-```
-[error] <0.818.0> Failed to start Ranch listener {acceptor,{0,0,0,0,0,0,0,0},5671} in ranch_ssl:listen(#{connection_type => supervisor,handshake_timeout => 5000,max_connections => infinity,num_acceptors => 10,num_conns_sups => 1,socket_opts => [{cacerts,'...'},{key,'...'},{cert,'...'},{ip,{0,0,0,0,0,0,0,0}},{port,5671},inet6,{backlog,128},{nodelay,true},{linger,{true,0}},{exit_on_close,false},{versions,['tlsv1.3','tlsv1.2','tlsv1.1',tlsv1]}]}) for reason no_cert (no certificate provided; see cert, certfile, sni_fun or sni_hosts options)
-[error] <0.818.0> 
-[error] <0.815.0>     supervisor: {<0.815.0>,ranch_listener_sup}
-[error] <0.815.0>     errorContext: start_error
-[error] <0.815.0>     reason: {listen_error,{acceptor,{0,0,0,0,0,0,0,0},5671},no_cert}
-[error] <0.815.0>     offender: [{pid,undefined},
-[error] <0.815.0>                {id,ranch_acceptors_sup},
-[error] <0.815.0>                {mfargs,
-[error] <0.815.0>                    {ranch_acceptors_sup,start_link,
-[error] <0.815.0>                        [{acceptor,{0,0,0,0,0,0,0,0},5671},ranch_ssl,logger]}},
-[error] <0.815.0>                {restart_type,permanent},
-[error] <0.815.0>                {significant,false},
-[error] <0.815.0>                {shutdown,infinity},
-[error] <0.815.0>                {child_type,supervisor}]
-[error] <0.815.0> 
-[error] <0.818.0>   crasher:
-[error] <0.818.0>     initial call: supervisor:ranch_acceptors_sup/1
-[error] <0.818.0>     pid: <0.818.0>
-[error] <0.818.0>     registered_name: []
-[error] <0.818.0>     exception exit: {listen_error,{acceptor,{0,0,0,0,0,0,0,0},5671},no_cert}
-[error] <0.818.0>       in function  ranch_acceptors_sup:listen_error/5 (src/ranch_acceptors_sup.erl, line 96)
-[error] <0.818.0>       in call from ranch_acceptors_sup:start_listen_sockets/5 (src/ranch_acceptors_sup.erl, line 54)
-[error] <0.818.0>       in call from ranch_acceptors_sup:init/1 (src/ranch_acceptors_sup.erl, line 34)
-[error] <0.818.0>       in call from supervisor:init/1 (supervisor.erl, line 330)
-[error] <0.818.0>       in call from gen_server:init_it/2 (gen_server.erl, line 423)
-[error] <0.818.0>       in call from gen_server:init_it/6 (gen_server.erl, line 390)
-[error] <0.818.0>     ancestors: [<0.815.0>,<0.813.0>,<0.812.0>,rabbit_sup,<0.221.0>]
-[error] <0.818.0>     message_queue_len: 0
-[error] <0.818.0>     messages: []
-[error] <0.818.0>     links: [<0.815.0>]
-[error] <0.818.0>     dictionary: []
-[error] <0.818.0>     trap_exit: true
-[error] <0.818.0>     status: running
-[error] <0.818.0>     heap_size: 4185
-[error] <0.818.0>     stack_size: 29
-[error] <0.818.0>     reductions: 8641
-[error] <0.818.0>   neighbours:
-[error] <0.818.0> 
-[error] <0.813.0>     supervisor: {<0.813.0>,ranch_embedded_sup}
-[error] <0.813.0>     errorContext: start_error
-[error] <0.813.0>     reason: {shutdown,
-[error] <0.813.0>                 {failed_to_start_child,ranch_acceptors_sup,
-[error] <0.813.0>                     {listen_error,{acceptor,{0,0,0,0,0,0,0,0},5671},no_cert}}}
-[error] <0.813.0>     offender: [{pid,undefined},
-[error] <0.813.0>                {id,{ranch_listener_sup,{acceptor,{0,0,0,0,0,0,0,0},5671}}},
-[error] <0.813.0>                {mfargs,
-[error] <0.813.0>                    {ranch_listener_sup,start_link,
-[error] <0.813.0>                        [{acceptor,{0,0,0,0,0,0,0,0},5671},
-[error] <0.813.0>                         ranch_ssl,
-[error] <0.813.0>                         #{connection_type => supervisor,
-[error] <0.813.0>                           handshake_timeout => 5000,
-[error] <0.813.0>                           max_connections => infinity,num_acceptors => 10,
-[error] <0.813.0>                           num_conns_sups => 1,
-[error] <0.813.0>                           socket_opts =>
-[error] <0.813.0>                               [{ip,{0,0,0,0,0,0,0,0}},
-[error] <0.813.0>                                {port,5671},
-[error] <0.813.0>                                inet6,
-[error] <0.813.0>                                {backlog,128},
-[error] <0.813.0>                                {nodelay,true},
-[error] <0.813.0>                                {linger,{true,0}},
-[error] <0.813.0>                                {exit_on_close,false},
-[error] <0.813.0>                                {versions,
-[error] <0.813.0>                                    ['tlsv1.3','tlsv1.2','tlsv1.1',tlsv1]}]},
-[error] <0.813.0>                         rabbit_connection_sup,[]]}},
-[error] <0.813.0>                {restart_type,permanent},
-[error] <0.813.0>                {significant,false},
-[error] <0.813.0>                {shutdown,infinity},
-[error] <0.813.0>                {child_type,supervisor}]
-[error] <0.813.0> 
-[error] <0.812.0>     supervisor: {<0.812.0>,tcp_listener_sup}
-[error] <0.812.0>     errorContext: start_error
-[error] <0.812.0>     reason: {shutdown,
-[error] <0.812.0>                 {failed_to_start_child,
-[error] <0.812.0>                     {ranch_listener_sup,{acceptor,{0,0,0,0,0,0,0,0},5671}},
-[error] <0.812.0>                     {shutdown,
-[error] <0.812.0>                         {failed_to_start_child,ranch_acceptors_sup,
-[error] <0.812.0>                             {listen_error,
-[error] <0.812.0>                                 {acceptor,{0,0,0,0,0,0,0,0},5671},
-[error] <0.812.0>                                 no_cert}}}}}
-[error] <0.812.0>     offender: [{pid,undefined},
-[error] <0.812.0>                {id,{ranch_embedded_sup,{acceptor,{0,0,0,0,0,0,0,0},5671}}},
-[error] <0.812.0>                {mfargs,
-[error] <0.812.0>                    {ranch_embedded_sup,start_link,
-[error] <0.812.0>                        [{acceptor,{0,0,0,0,0,0,0,0},5671},
-[error] <0.812.0>                         ranch_ssl,
-[error] <0.812.0>                         #{connection_type => supervisor,
-[error] <0.812.0>                           handshake_timeout => 5000,
-[error] <0.812.0>                           max_connections => infinity,num_acceptors => 10,
-[error] <0.812.0>                           num_conns_sups => 1,
-[error] <0.812.0>                           socket_opts =>
-[error] <0.812.0>                               [{ip,{0,0,0,0,0,0,0,0}},
-[error] <0.812.0>                                {port,5671},
-[error] <0.812.0>                                inet6,
-[error] <0.812.0>                                {backlog,128},
-[error] <0.812.0>                                {nodelay,true},
-[error] <0.812.0>                                {linger,{true,0}},
-[error] <0.812.0>                                {exit_on_close,false},
-[error] <0.812.0>                                {versions,
-[error] <0.812.0>                                    ['tlsv1.3','tlsv1.2','tlsv1.1',tlsv1]}]},
-[error] <0.812.0>                         rabbit_connection_sup,[]]}},
-[error] <0.812.0>                {restart_type,permanent},
-[error] <0.812.0>                {significant,false},
-[error] <0.812.0>                {shutdown,infinity},
-[error] <0.812.0>                {child_type,supervisor}]
-```
-4. Attempted to modify the `advanced.config` file to that in `advanced_hashed.erl`: 
-
-```
-[
-  {rabbit, [
-     {ssl_listeners, [5671]},
-     {ssl_options, [{cacertfile,"/home/rabbitmq-certs/test-certs/ca-chain.cert.pem"},
-                      {certfile,"/home/rabbitmq-certs/test-certs/server.cert.pem"},
-                      {keyfile,"/home/rabbitmq-certs/test-certs/server.key.pem"},
-                      {verify,verify_peer},
-                      {fail_if_no_peer_cert,true},
-                      {crl_check, true},
-                      {crl_cache, {ssl_crl_hash_dir, {internal, [{dir, "/home/crl/"}]}}}]}
-   ]}
-].
-```
-
-The same error of `Failed to start Ranch listener` will appear. 
 
 ## References and Acknowlegdment 
 
@@ -464,3 +379,10 @@ I also took referrence from the following websites and repositories:
   - [openssl crl](https://www.mkssoftware.com/docs/man1/openssl_crl.1.asp)
 
   - [B.4. CRL Extensions](https://access.redhat.com/documentation/en-us/red_hat_certificate_system/9/html/administration_guide/crl_extensions)
+
+  - [Support crl_cache in conf-style configuration](https://github.com/rabbitmq/rabbitmq-server/issues/2338)
+
+https://stackoverflow.com/questions/51479571/erlang-check-pem-certificate-is-not-revoked-with-crl-file
+https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/2.1/html/administration_guide/chap-red_hat_update_infrastructure-administration_guide-certification_revocation_list_crl
+
+
