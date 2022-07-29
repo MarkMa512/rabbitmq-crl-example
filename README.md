@@ -180,7 +180,12 @@ cert-gen\root\ca\intermediate-client\issuing-server\private
 
 Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
 
-The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. I have also attempted to convert the CRL file from PEM format to DER format as `issuing-client.crl` using commands `covert_crl_pem_to_der.sh` under `cert-gen`. There is no difference. 
+
+  - I have tried using **both EXTERNAL and PLAIN** authetication mechanism, but the behavior is the **same**. 
+  - I have also attempted to convert the CRL file from PEM format to **DER format** as `issuing-client.crl` using commands `covert_crl_pem_to_der.sh` under `cert-gen`. Again, there is no difference. 
+      - As per the [ssl_crl_cache](https://www.erlang.org/doc/man/ssl_crl_cache.html#DATA%20TYPES) documentation, a DER formmatted CRL is needed. 
+
+The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
 
 Despite of using the `advanced.config` to enable the CRL checking funtion: 
 
@@ -200,7 +205,7 @@ Despite of using the `advanced.config` to enable the CRL checking funtion:
 ].
 ```
 
-`client-2` is **still able to connect to broker**. I have tried using both EXTERNAL and PLAIN authetication mechanism, but the behavior is the same. 
+`client-2` is **still able to connect to broker**, shown as below.
 
 ```
 INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('::1', 5671, 0, 0)
@@ -211,8 +216,6 @@ INFO:pika.adapters.utils.connection_workflow:AMQPConnector - reporting success: 
 INFO:pika.adapters.utils.connection_workflow:AMQPConnectionWorkflow - reporting success: <SelectConnection OPEN transport=<pika.adapters.utils.io_services_utils._AsyncSSLTransport object at 0x7f8a6ad88e80> params=<ConnectionParameters host=localhost port=5671 virtual_host=/ ssl=True>>
 INFO:pika.adapters.blocking_connection:Connection workflow succeeded: <SelectConnection OPEN transport=<pika.adapters.utils.io_services_utils._AsyncSSLTransport object at 0x7f8a6ad88e80> params=<ConnectionParameters host=localhost port=5671 virtual_host=/ ssl=True>>
 INFO:pika.adapters.blocking_connection:Created channel=1
-
-This is activity_log.py: monitoring routing key '#' in exchange 'logging_topic' ...
 
 ```
 
