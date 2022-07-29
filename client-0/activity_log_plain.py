@@ -3,7 +3,7 @@
 import json
 import os
 
-import amqp_setup
+import amqp_setup_plain as amqp_setup
 
 monitorBindingKey = '#'
 
