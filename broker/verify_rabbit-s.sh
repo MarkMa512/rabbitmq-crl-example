@@ -18,3 +18,12 @@ echo "Display rabbit-s/etc/rabbitmq/advanced.config..."
 echo "--------------------------------------------------"
 docker exec rabbit-s cat /etc/rabbitmq/advanced.config&&
 echo "=================================================="
+echo "Display users and permissions..."
+echo "--------------------------------------------------"
+docker exec rabbit-s rabbitmqctl list_users&&
+docker exec rabbit-s rabbitmqctl list_permissions&&
+echo "=================================================="
+echo "Display enabled plugins..."
+echo "--------------------------------------------------"
+docker exec rabbit-s rabbitmq-plugins list&&
+echo "=================================================="
