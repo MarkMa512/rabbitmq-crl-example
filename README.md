@@ -460,3 +460,7 @@ I also took referrence from the following websites and repositories:
   - [erlang/otp/ssl_crl_SUITE.erl](https://github.com/erlang/otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl)
 
   - [Kubernetes RabbitMQ Certificate Revocation List](https://greduan.com/blog/2022/02/02/kubernetes-rabbitmq-certificate-revocation-list)
+
+  - [openssl crl](https://www.mkssoftware.com/docs/man1/openssl_crl.1.asp)
+
+  - [B.4. CRL Extensions](https://access.redhat.com/documentation/en-us/red_hat_certificate_system/9/html/administration_guide/crl_extensions)
