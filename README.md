@@ -200,7 +200,7 @@ Despite of using the `advanced.config` to enable the CRL checking funtion:
                     {verify,verify_peer},
                     {fail_if_no_peer_cert,true}]},
                     {crl_check, true},
-                    {crl_cache, {ssl_crl_cache, {internal, [{dir, "/home/crl/issuing-client.crl.pem"}]}}}
+                    {crl_cache, {ssl_crl_cache, {internal, [{dir, "/home/crl/issuing-client.crl"}]}}}
    ]}
 ].
 ```
