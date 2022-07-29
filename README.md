@@ -14,15 +14,25 @@ The aim for this project is to use CRL mechanism to **block client-2**, with an 
 
 ## Prerequisite: 
 This project is tested on: 
-- RHEL 8.5 and macOS 12.4
+- RHEL 8.5 / macOS 12.4
 - with git installed
 - with Docker installed
 - with Python 3.10 and pika 1.2.1  / Python 3.8.8 and pika 1.2.0 installed
 
 ## Geting Started 
 
-### Start the RabbitMQ broker 
-1. Clone the repository to your computer: 
+### Before you begin: Authetication Mechanism 
+**EXTERNAL** Authentication Mechanism using x509 certifictae peer verification has been **enabled by default** in this repository. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
+
+```
+# enable this line for external authetication via certificates and SSL
+auth_mechanisms.1 = EXTERNAL
+```
+
+For more information regarding RabbitMQ Authetication Mechanism, please refer to [rabbitmq/access-control#mechanisms](https://www.rabbitmq.com/access-control.html#mechanisms)
+
+### Start the RabbitMQ broker container
+1. using terminal, clone the repository to your computer: 
 ```
 git clone https://github.com/MarkMa512/rabbitmq-crl-example.git
 ```
@@ -37,10 +47,28 @@ cd rabbitmq-crl-example/broker
 sh start_cluster_rabbit-s.sh
 ```
 
-4. Run the `apply_useraccess.sh` script: 
+#### EXTERNAL Authentication Mechanism
+
+**By default**, the broker has **EXTERNAL** authetication mechanism enabled in `rabbitmq.conf` files. Follow step 4 and 5. 
+
+4. Run the `enable_auth_mechanism_ssl.sh`
 ```
-sh apply_useraccess.sh
+sh enable_auth_mechanism_ssl.sh
 ```
+
+5. Run the `apply_useraccess_external.sh` script: 
+```
+sh apply_useraccess_external.sh
+```
+
+#### PLAIN Authetication Mechanism 
+If you wish to use **PLAIN** authetication mechanismonly, besides commenting out the line in `rabbitmq.conf` as per mentioned in [Before you begin: Authetication Mechanism](https://github.com/MarkMa512/rabbitmq-crl-example#before-you-begin-authetication-mechanism), follow step 6
+
+6. Run the `apply_useraccess_plain.sh` script: 
+```
+sh apply_useraccess_plain.sh
+```
+
 
 ### Reload certificates/crl/configuration files and reset the broker 
 If you have modified the certificates/crl/configuration files, please run the following script to reset the broker
@@ -54,6 +82,13 @@ To verify the locations of certificates, as well as the contents for the config 
 sh verify_rabbit-s.sh
 ```
 
+### Teardown the broker setup
+If you are experiencing some errors or failures, you can tear down the entier setup with the following script: 
+```
+sh tear_down_rabbit-s.sh
+```
+
+
 ### Start the client 
 1. Enter the client directory: 
 ```
@@ -62,10 +97,18 @@ cd client-0
 
 2. Run the python client: 
 ```
-python activity_log.py
+python activity_log_external.py
 ```
+```
+python activity_log_plain.py
+```
+Note: 
 
-Note: you may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
+a. Please run the client according to the the authetication mechanism. 
+  i. EXTERNAL: `activity_log_external.py`
+  ii. PLAIN: `activity_log_plain.py`
+
+b. You may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
 
 ## Certificate Structure and Generation
 
@@ -73,20 +116,20 @@ The certificates are **self-signed** for **testing purposes only**.
 
 The certificate generation are done using a series of shell script in `/cert-gen` folder, in the following hierachy: 
 
-**ROOT CA**
-  - IntermediateClient CA
-    - IssuingClient CA (**CRL generating CA**)
-      - client-0  
-      - client-1  
-      - client-2 (**revoked**)
-  - Intermediate Server CA 
-    - IssuingServer CA 
-      - server 
+  - **ROOT CA**
+    - IntermediateClient CA
+      - IssuingClient CA (**CRL generating CA**)
+        - client-0  
+        - client-1  
+        - client-2 (**revoked**)
+    - Intermediate Server CA 
+      - IssuingServer CA 
+        - server 
 
 ### Generating the certificate
 If you wish to regenerate the certificates to modify things like common name, please follow the following steps: 
 
-1. Modify all the `openssl_xxxx.cnf` at line 10 to that matching your repo path
+1. Modify all the `openssl_xxxx.cnf` at line 10 to that matching the path of repo on your machine
 ```
 dir               = /path/to/the/repo/rabbitmq-crl-example/cert-gen/root/ca
 ```
@@ -133,7 +176,7 @@ cert-gen\root\ca\intermediate-client\issuing-server\private
 
 ## Existing Issue 
 
-Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, this mechanism does not seem to be working. 
+Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
 
 The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
 
@@ -155,7 +198,7 @@ Despite of using the `advanced.config` to enable the CRL checking funtion:
 ].
 ```
 
-`client-2` is **still able to connect to broker**: 
+`client-2` is **still able to connect to broker**. I have tried using both EXTERNAL and PLAIN authetication mechanism, but the behavior is the same. 
 
 ```
 INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('::1', 5671, 0, 0)
