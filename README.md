@@ -13,7 +13,7 @@ This is my attempt in implementing CRL Mechanism on RabbitMQ to block client wit
 The aim for this project is to use CRL mechanism to **block client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
 
 ## Prerequisite: 
-This project is tested on: 
+This project is tested on:
 - RHEL 8.5 / macOS 12.4
 - with git installed
 - with Docker installed
@@ -214,6 +214,83 @@ INFO:pika.adapters.blocking_connection:Created channel=1
 
 This is activity_log.py: monitoring routing key '#' in exchange 'logging_topic' ...
 
+```
+
+## Other Attempts and Findings
+
+1. Enable both the PLAIN and EXTERNAL Autehitcaiton Mechanism, with both user acess enabled: 
+
+```
+auth_mechanisms.1 = EXTERNAL
+auth_mechanisms.1 = PLAIN
+```
+
+Attempting to connect via client-0: `activity_log_external.py` and `activity_log_plain.py`, would lead to failure: 
+
+For `activity_log_external.py`: 
+
+```
+INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('::1', 5671, 0, 0)
+INFO:pika.adapters.utils.io_services_utils:Socket connected: <socket.socket fd=6, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('::1', 41966, 0, 0), raddr=('::1', 5671, 0, 0)>
+ERROR:pika.adapters.utils.io_services_utils:SSL do_handshake failed: error=ConnectionResetError(104, 'Connection reset by peer'); <ssl.SSLSocket fd=6, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('::1', 41966, 0, 0)>
+ConnectionResetError: [Errno 104] Connection reset by peer
+ERROR:pika.adapters.utils.connection_workflow:Attempt to create the streaming transport failed: ConnectionResetError(104, 'Connection reset by peer'); 'localhost'/(<AddressFamily.AF_INET6: 10>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('::1', 5671, 0, 0)); ssl=True
+ERROR:pika.adapters.utils.connection_workflow:AMQPConnector - reporting failure: AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer')
+INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('127.0.0.1', 5671)
+INFO:pika.adapters.utils.io_services_utils:Socket connected: <socket.socket fd=7, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('127.0.0.1', 57630), raddr=('127.0.0.1', 5671)>
+ERROR:pika.adapters.utils.io_services_utils:SSL do_handshake failed: error=ConnectionResetError(104, 'Connection reset by peer'); <ssl.SSLSocket fd=7, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('127.0.0.1', 57630)>
+ConnectionResetError: [Errno 104] Connection reset by peer
+ERROR:pika.adapters.utils.connection_workflow:Attempt to create the streaming transport failed: ConnectionResetError(104, 'Connection reset by peer'); 'localhost'/(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('127.0.0.1', 5671)); ssl=True
+ERROR:pika.adapters.utils.connection_workflow:AMQPConnector - reporting failure: AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer')
+ERROR:pika.adapters.utils.connection_workflow:AMQP connection workflow failed: AMQPConnectionWorkflowFailed: 2 exceptions in all; last exception - AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer'); first exception - AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer').
+ERROR:pika.adapters.utils.connection_workflow:AMQPConnectionWorkflow - reporting failure: AMQPConnectionWorkflowFailed: 2 exceptions in all; last exception - AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer'); first exception - AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer')
+ERROR:pika.adapters.blocking_connection:Connection workflow failed: AMQPConnectionWorkflowFailed: 2 exceptions in all; last exception - AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer'); first exception - AMQPConnectorTransportSetupError: ConnectionResetError(104, 'Connection reset by peer')
+ERROR:pika.adapters.blocking_connection:Error in _create_connection().
+ConnectionResetError: [Errno 104] Connection reset by peer
+```
+
+For `activity_log_plain.py`: 
+
+```
+INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('::1', 5671, 0, 0)
+INFO:pika.adapters.utils.io_services_utils:Socket connected: <socket.socket fd=6, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('::1', 41976, 0, 0), raddr=('::1', 5671, 0, 0)>
+ERROR:pika.adapters.utils.io_services_utils:SSL do_handshake failed: error=SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); <ssl.SSLSocket fd=6, family=AddressFamily.AF_INET6, type=SocketKind.SOCK_STREAM, proto=6, laddr=('::1', 41976, 0, 0)>
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+ERROR:pika.adapters.utils.connection_workflow:Attempt to create the streaming transport failed: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); 'localhost'/(<AddressFamily.AF_INET6: 10>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('::1', 5671, 0, 0)); ssl=True
+ERROR:pika.adapters.utils.connection_workflow:AMQPConnector - reporting failure: AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')
+INFO:pika.adapters.utils.connection_workflow:Pika version 1.2.1 connecting to ('127.0.0.1', 5671)
+INFO:pika.adapters.utils.io_services_utils:Socket connected: <socket.socket fd=7, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('127.0.0.1', 57640), raddr=('127.0.0.1', 5671)>
+ERROR:pika.adapters.utils.io_services_utils:SSL do_handshake failed: error=SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); <ssl.SSLSocket fd=7, family=AddressFamily.AF_INET, type=SocketKind.SOCK_STREAM, proto=6, laddr=('127.0.0.1', 57640)>
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+ERROR:pika.adapters.utils.connection_workflow:Attempt to create the streaming transport failed: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); 'localhost'/(<AddressFamily.AF_INET: 2>, <SocketKind.SOCK_STREAM: 1>, 6, '', ('127.0.0.1', 5671)); ssl=True
+ERROR:pika.adapters.utils.connection_workflow:AMQPConnector - reporting failure: AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')
+ERROR:pika.adapters.utils.connection_workflow:AMQP connection workflow failed: AMQPConnectionWorkflowFailed: 2 exceptions in all; last exception - AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); first exception - AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)').
+ERROR:pika.adapters.utils.connection_workflow:AMQPConnectionWorkflow - reporting failure: AMQPConnectionWorkflowFailed: 2 exceptions in all; last exception - AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); first exception - AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')
+ERROR:pika.adapters.blocking_connection:Connection workflow failed: AMQPConnectionWorkflowFailed: 2 exceptions in all; last exception - AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)'); first exception - AMQPConnectorTransportSetupError: SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')
+ERROR:pika.adapters.blocking_connection:Error in _create_connection().
+ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
+
+```
+
+**No Logs** are observed on the Broker side. 
+
+2. Using EXTERNAL Autheticaion, use 2 instances of client-0: `activity_log_external.py` to connect to the broker: 
+
+Both instances are able to connect to the broker. The logs of the broker are as follows: 
+
+```
+[info] <0.1013.0> accepting AMQP connection <0.1013.0> (IP Address)
+[debug] <0.1013.0> auth mechanism TLS extracted username 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' from peer certificate
+[debug] <0.1013.0> Raw client connection hostname during authN phase: {0,0,0,0,0,65##5,4##50,2}
+[debug] <0.1013.0> Resolved client hostname during authN phase: ::ffff:IP Address
+[debug] <0.1013.0> User 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' authenticated successfully by backend rabbit_auth_backend_internal
+[info] <0.1013.0> connection <0.1013.0> (IP Address): user 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' authenticated and granted access to vhost '/'
+[info] <0.1053.0> accepting AMQP connection <0.1053.0> (IP Address)
+[debug] <0.1053.0> auth mechanism TLS extracted username 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' from peer certificate
+[debug] <0.1053.0> Raw client connection hostname during authN phase: {0,0,0,0,0,65##5,4##50,2}
+[debug] <0.1053.0> Resolved client hostname during authN phase: ::ffff:IP Address
+[debug] <0.1053.0> User 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' authenticated successfully by backend rabbit_auth_backend_internal
+[info] <0.1053.0> connection <0.1053.0> (IP Address): user 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' authenticated and granted access to vhost '/'
 ```
 
 ## References and Acknowlegdment 
