@@ -1,3 +1,4 @@
+% Reference: https://serverfault.com/questions/752233/rabbitmq-crl-configuration
 [
   {rabbit, [
      {ssl_listeners, [5671]},
