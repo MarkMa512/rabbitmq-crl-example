@@ -274,9 +274,9 @@ ssl.SSLEOFError: EOF occurred in violation of protocol (_ssl.c:997)
 
 **No Logs** are observed on the Broker side. 
 
-2. Using EXTERNAL Autheticaion, use 2 instances of client-0: `activity_log_external.py` to connect to the broker: 
+2. Using EXTERNAL Authenticaion, use 2 instances of client-0: `activity_log_external.py` to connect to the broker: 
 
-Both instances are able to connect to the broker. The logs of the broker are as follows: 
+Both instances are able to connect to the broker simultaneously. The logs of the broker are as follows: 
 
 ```
 [info] <0.1013.0> accepting AMQP connection <0.1013.0> (IP Address)
@@ -292,6 +292,8 @@ Both instances are able to connect to the broker. The logs of the broker are as 
 [debug] <0.1053.0> User 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' authenticated successfully by backend rabbit_auth_backend_internal
 [info] <0.1053.0> connection <0.1053.0> (IP Address): user 'CN=client-0,OU=crlTesting,O=crlTesting,ST=ProvinceName,C=US' authenticated and granted access to vhost '/'
 ```
+
+The above test was done using PLAIN authentication mechanism, the behaviour is very similar where by 2 instances of client-0 `activity_log_plain.py` can connect to the broker simoutaneously. 
 
 ## References and Acknowlegdment 
 
