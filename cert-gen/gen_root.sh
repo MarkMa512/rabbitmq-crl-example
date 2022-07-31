@@ -6,6 +6,7 @@ cd ca&&
 mkdir certs crl newcerts private&&
 touch index.txt&&
 echo 1000 > serial&&
+echo 1000 > crlnumber&&
 
 echo "2. creating the root key: "&&
 openssl genrsa -out private/ca.key.pem 4096&&

@@ -1,7 +1,5 @@
 echo "1. create CRL at Intermediate-Client CA"
-cd root/ca/intermediate-client&&
-mkdir crl&&
-cd..&&
+cd root/ca&&
 openssl ca -config intermediate-client/openssl_intermediate_client.cnf -gencrl -out intermediate-client/crl/intermediate-client.crl.pem&&
 
 echo "2. verify the CRL"
