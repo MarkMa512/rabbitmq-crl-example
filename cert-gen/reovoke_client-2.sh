@@ -1,12 +1,11 @@
-echo "1. create CRL"
-cd root/ca/intermediate-client&&
-openssl ca -config issuing-client/openssl_issuing_client.cnf -gencrl -out issuing-client/crl/issuing-client.crl.pem&&
-
-echo "2. revoke client-2"
+echo "1. revoke client-2"
 openssl ca -config issuing-client/openssl_issuing_client.cnf -revoke issuing-client/certs/client-2.cert.pem&&
 
-echo "3. re-create updated CRL"
+echo "2. re-create updated CRL at issuing-client CA"
 openssl ca -config issuing-client/openssl_issuing_client.cnf -gencrl -out issuing-client/crl/issuing-client.crl.pem&&
 
-echo "4. verify the CRL"
-openssl crl -in issuing-client/crl/issuing-client.crl.pem -noout -text
+echo "3. verify the CRL"
+openssl crl -in issuing-client/crl/issuing-client.crl.pem -noout -text&&
+
+echo "4. re-create the CRL chain"
+sh gen_crl_chain.sh

@@ -385,4 +385,5 @@ I also took referrence from the following websites and repositories:
 https://stackoverflow.com/questions/51479571/erlang-check-pem-certificate-is-not-revoked-with-crl-file
 https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/2.1/html/administration_guide/chap-red_hat_update_infrastructure-administration_guide-certification_revocation_list_crl
 
-
+crl chain generation 
+https://stackoverflow.com/questions/43662445/unable-to-get-certificate-crl
