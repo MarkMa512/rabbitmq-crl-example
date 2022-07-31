@@ -75,6 +75,8 @@ If you have modified the certificates/crl/configuration files, please run the fo
 ```
 sh reload_reset_rabbit-s.sh 
 ```
+Please re-apply user acess accordingly. 
+However, you are still advised to tear down the broker setup and re-start the broker. 
 
 ### Verify the configuration files and certificate location inside the broker 
 To verify the locations of certificates, as well as the contents for the config files, run 
@@ -120,7 +122,7 @@ The certificate generation are done using a series of shell script in `/cert-gen
 
   - **ROOT CA**
     - IntermediateClient CA
-      - IssuingClient CA (**CRL generating CA**)
+      - IssuingClient CA
         - client-0  
         - client-1  
         - client-2 (**revoked**)
@@ -176,14 +178,12 @@ cert-gen\root\ca\intermediate-client\issuing-server\private
 ```
 
 
+
 ## Existing Issue 
 
 Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
 
 
-  - I have tried using **both EXTERNAL and PLAIN** authetication mechanism, but the behavior is the **same**. 
-  - I have also attempted to convert the CRL file from PEM format to **DER format** as `issuing-client.crl` using commands `covert_crl_pem_to_der.sh` under `cert-gen`. Again, there is no difference. 
-      - As per the [ssl_crl_cache](https://www.erlang.org/doc/man/ssl_crl_cache.html#DATA%20TYPES) documentation, a DER formmatted CRL is needed. 
 
 The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
 
