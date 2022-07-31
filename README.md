@@ -387,3 +387,22 @@ https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/2.1/
 
 crl chain generation 
 https://stackoverflow.com/questions/43662445/unable-to-get-certificate-crl
+
+https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-rehash-command-script-on-linux
+
+https://github.com/erlang/otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl
+
+https://github.com/erlang/otp/blob/master/lib/public_key/src/pubkey_crl.erl
+
+https://www.erlang.org/doc/man/ssl.html
+
+```
+ssl_crl_hash_dir
+This module makes use of a directory where CRLs are stored in files named by the hash of the issuer name.
+
+The file names consist of eight hexadecimal digits followed by .rN, where N is an integer, e.g. 1a2b3c4d.r0. For the first version of the CRL, N starts at zero, and for each new version, N is incremented by one. The OpenSSL utility c_rehash creates symlinks according to this pattern.
+
+For a given hash value, this module finds all consecutive .r* files starting from zero, and those files taken together make up the revocation list. CRL files whose nextUpdate fields are in the past, or that are issued by a different CA that happens to have the same name hash, are excluded.
+```
+
+https://github.com/erlang/otp/issues/5300

@@ -3,7 +3,7 @@ echo "List rabbit-s/home/crl..."
 echo "--------------------------------------------------"
 docker exec rabbit-s ls "home/crl"&&
 echo "Verify the crl file..."
-docker exec rabbit-s openssl crl -in home/crl/issuing-client.crl.pem -noout -text&&
+docker exec rabbit-s openssl crl -in home/crl/crl-chain.crl.pem -noout -text&&
 echo "=================================================="
 echo "List rabbit-s/home/rabbitmq-certs/test-certs..."
 echo "--------------------------------------------------"
