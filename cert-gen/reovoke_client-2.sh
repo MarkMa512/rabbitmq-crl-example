@@ -6,4 +6,4 @@ echo "2. re-create updated CRL at issuing-client CA"
 openssl ca -config issuing-client/openssl_issuing_client.cnf -gencrl -out issuing-client/crl/issuing-client.crl.pem&&
 
 echo "3. verify the CRL"
-openssl crl -in issuing-client/crl/issuing-client.crl.pem -noout -text&&
+openssl crl -in issuing-client/crl/issuing-client.crl.pem -noout -text
