@@ -10,8 +10,8 @@ The aim for this project is to use CRL mechanism to:
 
 ### Directories
 - `/broker` contains shell scripts, server certificates, crl file, `rabbitmq.conf` and `advanced.config` files needed to set up the rabbitmq container. 
-  - `/broker/rabbit-1/certs` contains the server certificates, server keys and CA chain files 
-  - `/broker/rabbit-1/configs` contains `rabbitmq.conf` and `advanced.config` files, and advanced_*.erl files for testing purposes
+  - `/broker/rabbit-1/certs` contains the server certificate, server key and CA chain file
+  - `/broker/rabbit-1/configs` contains `rabbitmq.conf` and `advanced.config` files, and `advanced_*.erl` files for testing purposes
   - `/broker/rabbit-1/crl` contains individually generated and CRLs at different CA levels and their symbolic links after rehash. 
   - `/broker/rabbit-1/crl-chain`conatains a CRL chain, including from ROOT CA to issuing-client CA, and a symbolic link after rehash. 
 - `/cert-gen` contains OpenSSL config files and shell scripts that automates the certificates and crl generation process 
@@ -24,6 +24,7 @@ This project is tested on:
 - with git installed
 - with Docker installed
 - with Python 3.10 and pika 1.2.1  / Python 3.8.8 and pika 1.2.0 installed
+- with OpenSSL OpenSSL 1.1.1k /
 
 ## Before you begin: 
 
@@ -37,10 +38,10 @@ This project is tested on:
 
 
 ### RabbitMQ Authetication Mechanism 
-**EXTERNAL** Authentication Mechanism using x509 certifictae peer verification has been **enabled by default** in this example. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
+**EXTERNAL** Authentication Mechanism using x509 certificate peer verification has been **enabled by default** in this example. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
 
 ```
-# enable this line for external authetication via certificates and SSL
+# enable the line below for external authetication via certificates and SSL
 auth_mechanisms.1 = EXTERNAL
 ```
 
@@ -49,7 +50,7 @@ For more information regarding RabbitMQ Authetication Mechanism, please refer to
 ## Geting Started
 
 ### Start the RabbitMQ broker container
-1. using terminal, clone the repository to your computer: 
+1. using terminal, clone the repository to your machine: 
 ```
 git clone https://github.com/MarkMa512/rabbitmq-crl-example.git
 ```
@@ -102,7 +103,7 @@ sh verify_rabbit-s.sh
 ```
 
 ### Teardown the broker setup
-If you are experiencing some errors or failures, you can tear down the entier setup with the following script: 
+If you are experiencing errors, failures, you can tear down the entier setup with the following script: 
 ```
 sh tear_down_rabbit-s.sh
 ```
@@ -123,13 +124,13 @@ python activity_log_plain.py
 ```
 Note: 
 
-a. Please run the client according to the the authetication mechanism. 
+  a. Please run the client **according to the the authetication mechanism**. 
 
-  i. EXTERNAL: `activity_log_external.py`
+    i. EXTERNAL: `activity_log_external.py`
 
-  ii. PLAIN: `activity_log_plain.py`
+    ii. PLAIN: `activity_log_plain.py`
 
-b. You may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
+  b. You may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
 
 ## Certificate Structure and Generation
 
@@ -150,7 +151,7 @@ The certificate generation are done using a series of shell script in `/cert-gen
 ### Generating the certificate
 If you wish to regenerate the certificates to modify things like common name, please follow the following steps: 
 
-1. Modify all the `openssl_xxxx.cnf` at line 10 to that matching the path of repo on your machine
+1. **Modify all** the `openssl_xxxx.cnf` at **line 10** to that **matching the path** of repo on your machine
 ```
 dir               = /path/to/the/repo/rabbitmq-crl-example/cert-gen/root/ca
 ```
@@ -263,7 +264,13 @@ sh clear_issuong.sh
 ### Re-hash the CRL files 
 As per required by the [ssl_crl_hash_dir documenation](https://github.com/MarkMa512/rabbitmq-crl-example#erlangotp-ssl-documentation-ssl_crl_hash_dir), the CRL files needs to be **rehashed** for the *ssl_crl_hash* directory. 
 
-Run the following script 
+Run the this script after copying the CRL files to `broker\rabbit-1\crl`: 
+```
+cd broker
+sh rehash_crl.sh 
+```
+
+Kindly note that there are some issues here. 
 
 ## Current Issue 
 
