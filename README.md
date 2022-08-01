@@ -155,7 +155,17 @@ If you wish to regenerate the certificates to modify things like common name, pl
 ```
 dir               = /path/to/the/repo/rabbitmq-crl-example/cert-gen/root/ca
 ```
-2. Run the command in the following sequence, and input relevant details when prompted: 
+2. Enter `cert-gen` directory: 
+```
+cd cert-gen 
+```
+
+3. Remove existing certificates: 
+```
+sh clear_root.sh
+```
+
+4. Run the command in the following sequence, and input relevant details when prompted: 
 
   - a. Generate Root CA 
   ```
