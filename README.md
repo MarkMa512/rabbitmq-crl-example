@@ -150,37 +150,37 @@ dir               = /path/to/the/repo/rabbitmq-crl-example/cert-gen/root/ca
 ```
 2. Run the command in the following sequence, and input relevant details when prompted: 
 
-  a. Generate Root CA 
+  - a. Generate Root CA 
   ```
   sh gen_root.sh 
   ```
 
-  b. Generate Intermediate Server CA
+  - b. Generate Intermediate Server CA
   ```
   sh gen_intermediate_server.sh
   ```
 
-  c. Generate issuing Server CA 
+  - c. Generate issuing Server CA 
   ```
   sh gen_issuing_server.sh 
   ```
 
-  d. Generate Server Certificate 
+  - d. Generate Server Certificate 
   ```
   sh gen_server.sh 
   ```
 
-  e. Generate Intermediate Client CA 
+  - e. Generate Intermediate Client CA 
   ```
   sh gen_intermediate_client.sh 
   ```
 
-  f. Generate Issuing Client CA 
+  - f. Generate Issuing Client CA 
   ```
   sh gen_issuing_client.sh 
   ```
-  
-  g. Generate Client-0, Client-1 and Client-2 Client Certificate 
+
+  - g. Generate Client-0, Client-1 and Client-2 Client Certificate 
   ```
   sh gen_client_012.sh
   ```
@@ -234,6 +234,24 @@ cert-gen\root\ca\intermediate-client\crl
 ```
 ```
 cert-gen\root\ca\intermediate-client\issuing-client\crl
+```
+
+### Other Utilities
+If you made mistakes in generating certificates at a particlular level, you can run the corresponding script to delete them and re-run the generation sript: 
+
+1. Delete all the files and folders under `cert-gen/root`, inclusive of `root` directory
+```
+sh clear_root.sh 
+```
+
+2. Delete all the files and folders under `cert-gen/root/ca/intermediate-client` and `cert-gen/root/ca/intermediate-server`
+```
+sh clear_intermediate.sh 
+```
+
+3. Delete all the files and folders under `cert-gen\root\ca\intermediate-client\issuing-client` and `cert-gen\root\ca\intermediate-server\issuing-server`
+```
+sh clear_issuong.sh
 ```
 
 ## Current Issue 
