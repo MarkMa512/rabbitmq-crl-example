@@ -1,19 +1,19 @@
 # RabbitMQ Certificate Revocation List (CRL) Mechanism
 
 ## About the Project 
-This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file to invoke Erlang's native support for CRL, as well as locally stored CRL hash files. 
+This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file to invoke Erlang's *ssl_crl_hash_dir* module for CRL checking, as well as locally stored CRL hash files. 
 
 ## Aim 
 The aim for this project is to use CRL mechanism to: 
-1. **block client-2**, with a **revoked client certificate**, from connecting to the rabbitMQ broker. 
-2. while still **allowing client-0**, with a valid certificate, to connect to the broker. 
+1. **block client-2**, with a **revoked** client certificate, from connecting to the RabbitMQ broker. 
+2. while still **allowing client-0**, with a **valid** client certificate, to connect to the RabbitMQ broker. 
 
 ### Directories
 - `/broker` contains shell scripts, server certificates, crl file, `rabbitmq.conf` and `advanced.config` files needed to set up the rabbitmq container. 
   - `/broker/rabbit-1/certs` contains the server certificate, server key and CA chain file
   - `/broker/rabbit-1/configs` contains `rabbitmq.conf` and `advanced.config` files, and `advanced_*.erl` files for testing purposes
-  - `/broker/rabbit-1/crl` contains individually generated and CRLs at different CA levels and their symbolic links after rehash. 
-  - `/broker/rabbit-1/crl-chain`conatains a CRL chain, including from ROOT CA to issuing-client CA, and a symbolic link after rehash. 
+  - `/broker/rabbit-1/crl` contains **individually** generated and CRLs at **different CA levels** and their **symbolic links** after **rehash**. 
+  - `/broker/rabbit-1/crl-chain`conatains a **CRL chain**, from ROOT CA to Issuing Client CA, and a **symbolic link** after **rehash**
 - `/cert-gen` contains OpenSSL config files and shell scripts that automates the certificates and crl generation process 
 - `/client-0` a python client that connect to the broker via SSL with client-0 certificate 
 - `/client-2` a python client that connect to the broker via SSL with client-2 certificate (**revoked**)
@@ -270,9 +270,28 @@ cd broker
 sh rehash_crl.sh 
 ```
 
-Kindly note that there are some issues here. 
+There are 3 kinds of command stored in the `broker\rabbit-1\crl`, and they each faces some issues: 
 
-## Current Issue 
+```
+cd rabbit-1
+
+# method 1
+# This does not work for crl chain file, but works for individual crl files 
+# got error: bad_crl,invalid_signature
+openssl rehash crl
+
+# method 2
+# the crl chain Does not seemed to work after hashing for rabbitmq 
+# got error: bad_crls,no_relevant_crls
+# https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-rehash-command-script-on-linux
+# for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
+
+# method 3
+# does not work on RHEL; no output
+# c_rehash crl 
+```
+
+## Current Issue: 
 The issue now lies in the CRL format and re_hashing. I have made 2 attempts, each face some erros: 
 
 ### Current Attempt 1: Using CRL chain file
@@ -306,6 +325,23 @@ After importing the symbolic link and CRL file to broker ajusted the `advanced.c
 
 I have attempted to use `c_rehash crl` command, but it does not seem to produce any output. 
 
+### Current `advanced.config` file: 
+```
+[
+  {rabbit, [
+     {ssl_listeners, [5671]},
+     {ssl_options, [  
+                      {cacertfile,"/home/rabbitmq-certs/test-certs/ca-chain.cert.pem"},
+                      {certfile,"/home/rabbitmq-certs/test-certs/server.cert.pem"},
+                      {keyfile,"/home/rabbitmq-certs/test-certs/server.key.pem"},
+                      {verify,verify_peer},
+                      {fail_if_no_peer_cert,true},
+                      {crl_check, true},
+                      {crl_cache, {ssl_crl_hash_dir, {internal, [{dir, "/home/crl/"}]}}}
+                     ]}
+   ]}
+].
+```
 
 ## Previous Attempts Archieve:  
 ### Attempt 1: Wrong module of *ssl_crl_cache* used. 
