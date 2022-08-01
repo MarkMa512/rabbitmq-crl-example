@@ -304,7 +304,7 @@ openssl rehash crl
 ## Current Issue: 
 The issue now lies in the CRL format and re_hashing. I have made 2 attempts, each face some erros: 
 
-### Current Attempt 1: Using CRL chain file
+### Current Attempt 1: Using chained CRL file
 
 CRL file used: `broker\rabbit-1\crl-chain`
   - generated using `cert-gen\gen_crl_chain.sh` script
@@ -312,6 +312,8 @@ CRL file used: `broker\rabbit-1\crl-chain`
 I used the following command to generate the symblic link: 
 ```
 cd broker\rabbit-1\crl-chain
+```
+```
 for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
 ```
 
@@ -321,13 +323,15 @@ After importing the symbolic link and CRL file to broker ajusted the `advanced.c
 {bad_crls,no_relevant_crls} 
 ```
 
-### Current Attempt 2: Using Individual chain file 
-CRL file used: `broker\rabbit-1\crl` 
+### Current Attempt 2: Using Individual CRL files 
+CRL files used: `broker\rabbit-1\crl` 
   - obtained each level's CA's CRLs 
 
 I used the following command to generate the symbolic links: 
 ```
 cd broker\rabbit-1
+```
+```
 openssl rehash crl
 ```
 After importing the symbolic link and CRL file to broker ajusted the `advanced.config` file, if I try to use `client-0` to connect to the broker, this would lead to error: 
