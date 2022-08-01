@@ -1,7 +1,7 @@
 # RabbitMQ Certificate Revocation List (CRL) Mechanism
 
 ## About the Project 
-This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file and erlang's native support for CRL. 
+This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file and Erlang's native support for CRL. 
 
 ## Aim 
 The aim for this project is to use CRL mechanism to **block client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
@@ -21,7 +21,7 @@ This project is tested on:
 
 ## Before you begin: 
 
-### erlang/OTP SSL documentation: [ssl_crl_hash_dir](https://www.erlang.org/doc/man/ssl.html)
+### Erlang/OTP SSL documentation: [ssl_crl_hash_dir](https://www.erlang.org/doc/man/ssl.html)
 
 > This module makes use of a directory where CRLs are stored in files named by the hash of the issuer name.
 
@@ -30,7 +30,7 @@ This project is tested on:
 > For a given hash value, this module finds all consecutive .r* files starting from zero, and those files taken together make up the revocation list. CRL files whose nextUpdate fields are in the past, or that are issued by a different CA that happens to have the same name hash, are excluded.
 
 
-## RabbitMQ Authetication Mechanism 
+### RabbitMQ Authetication Mechanism 
 **EXTERNAL** Authentication Mechanism using x509 certifictae peer verification has been **enabled by default** in this example. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
 
 ```
@@ -73,7 +73,7 @@ sh apply_useraccess_external.sh
 ```
 
 #### PLAIN Authetication Mechanism 
-If you wish to use **PLAIN** authetication mechanismonly, besides commenting out the line in `rabbitmq.conf` as per mentioned in [Before you begin: Authetication Mechanism](https://github.com/MarkMa512/rabbitmq-crl-example#before-you-begin-authetication-mechanism), follow step 6
+If you wish to use **PLAIN** authetication mechanismonly, besides commenting out the line in `rabbitmq.conf` as per mentioned in [RabbitMQ Authetication Mechanism](https://github.com/MarkMa512/rabbitmq-crl-example#rabbitmq-authetication-mechanism), follow step 6. 
 
 6. Run the `apply_useraccess_plain.sh` script: 
 ```
@@ -149,29 +149,36 @@ If you wish to regenerate the certificates to modify things like common name, pl
 dir               = /path/to/the/repo/rabbitmq-crl-example/cert-gen/root/ca
 ```
 2. Run the command in the following sequence, and input relevant details when prompted: 
-```
-sh gen_root.sh 
-```
-```
-sh gen_intermediate_server.sh
-```
-```
-sh gen_issuing_server.sh 
-```
-```
-sh gen_server.sh 
-```
-```
-sh gen_intermediate_client.sh 
-```
-```
-sh gen_issuing_client.sh 
-```
-```
-sh gen_client_012.sh
-```
+  a. Generate Root CA 
+  ```
+  sh gen_root.sh 
+  ```
+  b. Generate Intermediate Server CA
+  ```
+  sh gen_intermediate_server.sh
+  ```
+  c. Generate issuing Server CA 
+  ```
+  sh gen_issuing_server.sh 
+  ```
+  d. Generate Server Certificate 
+  ```
+  sh gen_server.sh 
+  ```
+  e. Generate Intermediate Client CA 
+  ```
+  sh gen_intermediate_client.sh 
+  ```
+  f. Generate Issuing Client CA 
+  ```
+  sh gen_issuing_client.sh 
+  ```
+  g. Generate Client-0, Client-1 and Client-2 Client Certificate 
+  ```
+  sh gen_client_012.sh
+  ```
 
-The complete CA chain files, as well as the client/server certificates for the clients and the server are generated automatically at the following directotires: 
+3. The complete CA chain files, as well as the client/server certificates for the clients and the server are generated automatically at the following directotires: 
 ```
 cert-gen\root\ca\intermediate-client\issuing-client\certs
 ```
@@ -179,8 +186,7 @@ cert-gen\root\ca\intermediate-client\issuing-client\certs
 cert-gen\root\ca\intermediate-client\issuing-server\certs
 ```
 
-
-The keys are located at: 
+4. The keys are located at: 
 ```
 cert-gen\root\ca\intermediate-client\issuing-client\private
 ```
@@ -188,12 +194,44 @@ cert-gen\root\ca\intermediate-client\issuing-client\private
 cert-gen\root\ca\intermediate-client\issuing-server\private
 ```
 
-### Generating the CRLs 
+### Revoke client-2 certificate and generating the CRLs 
 
+Run the follow script: 
+
+1. Generate CRL at Root CA
+```
+sh gen_root_crl.sh 
+```
+2. Generate CRL at Intermediate (Client) CA 
+```
+sh gen_intermediate_crl.sh 
+```
+3. Generate CRL at Issuing (Client) CA
+```
+sh gen_issuing_client_crl.sh 
+```
+4. Revoke Client-2 Certificate (and regenerate the CRL)
+```
+sh revoke_client-2.sh 
+```
+5. Generate the chained CRLs
+```
+sh gen_crl_chain.sh
+```
+6. The generated CRLs and CRL Chain files are found in: 
+```
+cert-gen\root\ca\crl
+```
+```
+cert-gen\root\ca\intermediate-client\crl
+```
+```
+cert-gen\root\ca\intermediate-client\issuing-client\crl
+```
 
 ## Current Issue 
 
-Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
+Despite my best attempts, owing to my limited understanding of Erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
 
 
 
@@ -373,7 +411,7 @@ Both instances are able to connect to the broker simultaneously. The logs of the
 The above test was done using PLAIN authentication mechanism, the behaviour is very similar where by 2 instances of client-0 `activity_log_plain.py` can connect to the broker simoutaneously. 
 
 
-## References and Acknowlegdment 
+## References and Acknowlegdments 
 
 A special thank to [Luke Bakken](https://github.com/lukebakken) for his continued guidance and support through discussion [here](https://groups.google.com/g/rabbitmq-users/c/sLXfiBGaKfQ)
 
@@ -392,22 +430,23 @@ I also took referrence from the following websites and repositories:
 
   - [Kubernetes RabbitMQ Certificate Revocation List](https://greduan.com/blog/2022/02/02/kubernetes-rabbitmq-certificate-revocation-list)
 
-  - [openssl crl](https://www.mkssoftware.com/docs/man1/openssl_crl.1.asp)
+  - [OpenSSL crl](https://www.mkssoftware.com/docs/man1/openssl_crl.1.asp)
 
   - [B.4. CRL Extensions](https://access.redhat.com/documentation/en-us/red_hat_certificate_system/9/html/administration_guide/crl_extensions)
 
   - [Support crl_cache in conf-style configuration](https://github.com/rabbitmq/rabbitmq-server/issues/2338)
 
-https://stackoverflow.com/questions/51479571/erlang-check-pem-certificate-is-not-revoked-with-crl-file
-https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/2.1/html/administration_guide/chap-red_hat_update_infrastructure-administration_guide-certification_revocation_list_crl
+  - [Erlang check .pem certificate is not revoked with .crl file](https://stackoverflow.com/questions/51479571/erlang-check-pem-certificate-is-not-revoked-with-crl-file)
+  - [Chapter 8. Implementing a Certification Revocation List](https://access.redhat.com/documentation/en-us/red_hat_update_infrastructure/2.1/html/administration_guide/chap-red_hat_update_infrastructure-administration_guide-certification_revocation_list_crl)
 
-crl chain generation 
-https://stackoverflow.com/questions/43662445/unable-to-get-certificate-crl
+  - [unable to get certificate crl](https://stackoverflow.com/questions/43662445/unable-to-get-certificate-crl)
 
-https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-rehash-command-script-on-linux
+  - [What is the equivalent of Unix c_rehash command/script on Linux?](https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-rehash-command-script-on-linux)
 
-https://github.com/erlang/otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl
+  - [otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl](https://github.com/erlang/otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl)
 
-https://github.com/erlang/otp/blob/master/lib/public_key/src/pubkey_crl.erl
+  - [otp/lib/public_key/src/pubkey_crl.erl](https://github.com/erlang/otp/blob/master/lib/public_key/src/pubkey_crl.erl)
 
-https://github.com/erlang/otp/issues/5300
+  - [CRL check broken on OTP 24.1 #5300](https://github.com/erlang/otp/issues/5300)
+
+  - [c_rehash OpenSSL](https://www.openssl.org/docs/manmaster/man1/c_rehash.html)

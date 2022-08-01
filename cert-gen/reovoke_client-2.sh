@@ -7,6 +7,3 @@ openssl ca -config issuing-client/openssl_issuing_client.cnf -gencrl -out issuin
 
 echo "3. verify the CRL"
 openssl crl -in issuing-client/crl/issuing-client.crl.pem -noout -text&&
-
-echo "4. re-create the CRL chain"
-sh gen_crl_chain.sh
