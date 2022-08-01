@@ -117,19 +117,16 @@ cd ../client-0
 
 2. Run the python client: 
 ```
+# for external authentication
 python activity_log_external.py
 ```
 ```
+# for plain authentication
 python activity_log_plain.py
 ```
 Note: 
 
   a. Please run the client **according to the the authetication mechanism**. 
-
-    i. EXTERNAL: `activity_log_external.py`
-
-    ii. PLAIN: `activity_log_plain.py`
-
   b. You may need to use `python3` or `python3.10` etc instead of just `python`, depends on your Python installation configuration. 
 
 ## Certificate Structure and Generation
@@ -268,10 +265,10 @@ sh clear_intermediate.sh
 
 3. Delete all the files and folders under `cert-gen\root\ca\intermediate-client\issuing-client` and `cert-gen\root\ca\intermediate-server\issuing-server`
 ```
-sh clear_issuong.sh
+sh clear_issuing.sh
 ```
 
-### Re-hash the CRL files (issues present)
+### Re-hash the CRL files (ISSUE PRESENT)
 As per required by the [ssl_crl_hash_dir documenation](https://github.com/MarkMa512/rabbitmq-crl-example#erlangotp-ssl-documentation-ssl_crl_hash_dir), the CRL files needs to be **rehashed** for the *ssl_crl_hash* directory. 
 
 Run the this script after copying the CRL files to `broker\rabbit-1\crl`: 
@@ -294,15 +291,15 @@ openssl rehash crl
 # the crl chain Does not seemed to work after hashing for rabbitmq 
 # got error: bad_crls,no_relevant_crls
 # https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-rehash-command-script-on-linux
-# for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
+for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
 
 # method 3
 # does not work on RHEL; no output
-# c_rehash crl 
+c_rehash crl 
 ```
 
 ## Current Issue: 
-The issue now lies in the CRL format and re_hashing. I have made 2 attempts, each face some erros: 
+The issue now lies in the CRL format and re_hashing. I have made 2 attempts, each face some errors: 
 
 ### Current Attempt 1: Using chained CRL file
 
