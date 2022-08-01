@@ -1,7 +1,7 @@
 # RabbitMQ Certificate Revocation List (CRL) Mechanism
 
 ## About the Project 
-This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file to invoke Erlang's *ssl_crl_hash_dir* module for CRL checking, as well as locally stored CRL hash files. 
+This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file to invoke Erlang's *ssl_crl_hash_dir* module for CRL checking on locally stored CRL hash files. 
 
 ## Aim 
 The aim for this project is to use CRL mechanism to: 
