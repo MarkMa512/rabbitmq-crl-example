@@ -1,13 +1,19 @@
 # RabbitMQ Certificate Revocation List (CRL) Mechanism
 
 ## About the Project 
-This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file and Erlang's native support for CRL. 
+This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file to invoke Erlang's native support for CRL, as well as locally stored CRL hash files. 
 
 ## Aim 
-The aim for this project is to use CRL mechanism to **block client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
+The aim for this project is to use CRL mechanism to: 
+1. **block client-2**, with a **revoked client certificate**, from connecting to the rabbitMQ broker. 
+2. while still **allowing client-0**, with a valid certificate, to connect to the broker. 
 
 ### Directories
 - `/broker` contains shell scripts, server certificates, crl file, `rabbitmq.conf` and `advanced.config` files needed to set up the rabbitmq container. 
+  - `/broker/rabbit-1/certs` contains the server certificates, server keys and CA chain files 
+  - `/broker/rabbit-1/configs` contains `rabbitmq.conf` and `advanced.config` files, and advanced_*.erl files for testing purposes
+  - `/broker/rabbit-1/crl` contains individually generated and CRLs at different CA levels and their symbolic links after rehash. 
+  - `/broker/rabbit-1/crl-chain`conatains a CRL chain, including from ROOT CA to issuing-client CA, and a symbolic link after rehash. 
 - `/cert-gen` contains OpenSSL config files and shell scripts that automates the certificates and crl generation process 
 - `/client-0` a python client that connect to the broker via SSL with client-0 certificate 
 - `/client-2` a python client that connect to the broker via SSL with client-2 certificate (**revoked**)
@@ -21,7 +27,7 @@ This project is tested on:
 
 ## Before you begin: 
 
-### Erlang/OTP SSL documentation: [ssl_crl_hash_dir](https://www.erlang.org/doc/man/ssl.html)
+### Erlang/OTP SSL documentation: [*ssl_crl_hash_dir* Module](https://www.erlang.org/doc/man/ssl.html)
 
 > This module makes use of a directory where CRLs are stored in files named by the hash of the issuer name.
 
@@ -254,17 +260,27 @@ sh clear_intermediate.sh
 sh clear_issuong.sh
 ```
 
+### Re-hash the CRL files 
+As per required by the [ssl_crl_hash_dir documenation](https://github.com/MarkMa512/rabbitmq-crl-example#erlangotp-ssl-documentation-ssl_crl_hash_dir), the CRL files needs to be **rehashed** for the *ssl_crl_hash* directory. 
+
+Run the following script 
+
 ## Current Issue 
 
 Despite my best attempts, owing to my limited understanding of Erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
-
 
 
 The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
 
 Despite of using the `advanced.config` to enable the CRL checking funtion: 
 
-### Test Case 1: using *ssl_crl_cache* and `issuing-client.crl`
+
+## Previous Attempts 
+
+### Attempt 1: Wrong module of *ssl_crl_cache* used. 
+
+using *ssl_crl_cache* and `issuing-client.crl`
+
 ```
 [
   {rabbit, [
@@ -295,7 +311,12 @@ INFO:pika.adapters.blocking_connection:Created channel=1
 
 ```
 
-### Test Case 2: 
+While *ssl_crl_hash_dir* seems to require PEM formatted CRLs, *ssl_crl_cache* requires DER formatted CRLs. 
+  - Refer to the [documentation](https://www.erlang.org/doc/man/ssl_crl_cache.html)
+
+In this case, the use of *ssl_crl_cache* module is inappropriate as we wish to read the CRL from a local directory. 
+
+### Attempt 2: Mistake: Did not re-hash the CRL file and the CRL file needs to be in PEM fromat
 
 Attempts tp use *ssl_crl_hash_dir*  and `issuing-client.crl`: Both client cannot connect
 
@@ -331,9 +352,8 @@ Client-2:
 pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
 ```
 
-### Test Case 3: 
-Attempts tp use *ssl_crl_hash_dir*  and `issuing-client.crl.pem`
-
+### Attempt 3: Mistake: Did not re-hash the CRL file 
+Attempts to use *ssl_crl_hash_dir*  and `issuing-client.crl.pem`
 
 Broker: 
 ```
@@ -351,9 +371,6 @@ Client-2:
 ```
 pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
 ```
-
-## Previous Attempts 
-
 
 
 ## Other Findings
