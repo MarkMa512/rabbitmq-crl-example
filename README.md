@@ -24,7 +24,7 @@ This project is tested on:
 - with git installed
 - with Docker installed
 - with Python 3.10 and pika 1.2.1  / Python 3.8.8 and pika 1.2.0 installed
-- with OpenSSL OpenSSL 1.1.1k /
+- with OpenSSL OpenSSL 1.1.1k
 
 ## Before you begin: 
 
@@ -112,7 +112,7 @@ sh tear_down_rabbit-s.sh
 ### Start the client 
 1. Enter the client directory: 
 ```
-cd client-0
+cd ../client-0
 ```
 
 2. Run the python client: 
