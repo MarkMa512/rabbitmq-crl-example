@@ -28,7 +28,7 @@ This project is tested on:
 
 ## Before you begin: 
 
-### Erlang/OTP SSL documentation: [*ssl_crl_hash_dir* Module](https://www.erlang.org/doc/man/ssl.html)
+### Erlang/OTP SSL Documentation: [*ssl_crl_hash_dir* Module](https://www.erlang.org/doc/man/ssl.html)
 
 > This module makes use of a directory where CRLs are stored in files named by the hash of the issuer name.
 
@@ -38,7 +38,7 @@ This project is tested on:
 
 
 ### RabbitMQ Authetication Mechanism 
-**EXTERNAL** Authentication Mechanism using x509 certificate peer verification has been **enabled by default** in this example. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
+**EXTERNAL** Authentication Mechanism using x509 certificate peer verification has been **enabled by default** in this example. If you wish to use **SASL PLAIN** authetication mechanism, please comment out **line 6**: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
 
 ```
 # enable the line below for external authetication via certificates and SSL
@@ -261,7 +261,7 @@ sh clear_intermediate.sh
 sh clear_issuong.sh
 ```
 
-### Re-hash the CRL files 
+### Re-hash the CRL files (issues present)
 As per required by the [ssl_crl_hash_dir documenation](https://github.com/MarkMa512/rabbitmq-crl-example#erlangotp-ssl-documentation-ssl_crl_hash_dir), the CRL files needs to be **rehashed** for the *ssl_crl_hash* directory. 
 
 Run the this script after copying the CRL files to `broker\rabbit-1\crl`: 
@@ -273,17 +273,41 @@ sh rehash_crl.sh
 Kindly note that there are some issues here. 
 
 ## Current Issue 
+The issue now lies in the CRL format and re_hashing. I have made 2 attempts, each face some erros: 
 
-Despite my best attempts, owing to my limited understanding of Erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
+### Current Attempt 1: Using CRL chain file
+
+CRL file used: `broker\rabbit-1\crl-chain`
+  - generated using `cert-gen\gen_crl_chain.sh` script
+
+I used the following command to generate the symblic link: 
+```
+for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
+```
+
+After importing the symbolic link and CRL file to broker ajusted the `advanced.config` file, if I try to use `client-0` to connect to the broker, this would lead to error: 
+
+```
+{bad_crls,no_relevant_crls} 
+```
+
+### Current Attempt 2: Using Individual chain file 
+CRL file used: `broker\rabbit-1\crl` 
+  - obtained each level's CA's CRLs 
+
+I used the following command to generate the symbolic links: 
+```
+openssl rehash crl
+```
+After importing the symbolic link and CRL file to broker ajusted the `advanced.config` file, if I try to use `client-0` to connect to the broker, this would lead to error: 
+```
+{bad_crl,invalid_signature}
+```
+
+I have attempted to use `c_rehash crl` command, but it does not seem to produce any output. 
 
 
-The CRL file `issuing-client.crl.pem` is generated using the issuing-client CA, with commands `reovoke_client-2.sh` under `cert-gen`. 
-
-Despite of using the `advanced.config` to enable the CRL checking funtion: 
-
-
-## Previous Attempts 
-
+## Previous Attempts Archieve:  
 ### Attempt 1: Wrong module of *ssl_crl_cache* used. 
 
 using *ssl_crl_cache* and `issuing-client.crl`
@@ -319,7 +343,7 @@ INFO:pika.adapters.blocking_connection:Created channel=1
 ```
 
 While *ssl_crl_hash_dir* seems to require PEM formatted CRLs, *ssl_crl_cache* requires DER formatted CRLs. 
-  - Refer to the [documentation](https://www.erlang.org/doc/man/ssl_crl_cache.html)
+  - Refer to the [ssl_crl_cache documentation](https://www.erlang.org/doc/man/ssl_crl_cache.html)
 
 In this case, the use of *ssl_crl_cache* module is inappropriate as we wish to read the CRL from a local directory. 
 

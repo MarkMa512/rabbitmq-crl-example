@@ -8,6 +8,7 @@ openssl rehash crl
 # method 2
 # the crl chain Does not seemed to work after hashing for rabbitmq 
 # got error: bad_crls,no_relevant_crls
+# https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-rehash-command-script-on-linux
 # for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
 
 # method 3
