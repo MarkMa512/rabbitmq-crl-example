@@ -1,16 +1,16 @@
 # RabbitMQ Certificate Revocation List (CRL) Mechanism
 
 ## About the Project 
-This is my attempt in implementing CRL Mechanism on RabbitMQ to block client with certificate that has been revoked. My approach was to use the `advanced.config` file and erlang's native support for CRL. 
+This project aims to demostrate on how to implement CRL Mechanism on RabbitMQ to block client with certificate that has been revoked, with the use the `advanced.config` file and erlang's native support for CRL. 
+
+## Aim 
+The aim for this project is to use CRL mechanism to **block client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
 
 ### Directories
 - `/broker` contains shell scripts, server certificates, crl file, `rabbitmq.conf` and `advanced.config` files needed to set up the rabbitmq container. 
 - `/cert-gen` contains OpenSSL config files and shell scripts that automates the certificates and crl generation process 
 - `/client-0` a python client that connect to the broker via SSL with client-0 certificate 
 - `/client-2` a python client that connect to the broker via SSL with client-2 certificate (**revoked**)
-
-## Aim 
-The aim for this project is to use CRL mechanism to **block client-2**, with an **revoked client certificate**, from connecting to the rabbitMQ broker. 
 
 ## Prerequisite: 
 This project is tested on:
@@ -19,10 +19,19 @@ This project is tested on:
 - with Docker installed
 - with Python 3.10 and pika 1.2.1  / Python 3.8.8 and pika 1.2.0 installed
 
-## Geting Started 
+## Before you begin: 
 
-### Before you begin: Authetication Mechanism 
-**EXTERNAL** Authentication Mechanism using x509 certifictae peer verification has been **enabled by default** in this repository. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
+### erlang/OTP SSL documentation: [ssl_crl_hash_dir](https://www.erlang.org/doc/man/ssl.html)
+
+> This module makes use of a directory where CRLs are stored in files named by the hash of the issuer name.
+
+> The file names consist of eight hexadecimal digits followed by .rN, where N is an integer, e.g. 1a2b3c4d.r0. For the first version of the CRL, N starts at zero, and for each new version, N is incremented by one. The OpenSSL utility c_rehash creates symlinks according to this pattern.
+
+> For a given hash value, this module finds all consecutive .r* files starting from zero, and those files taken together make up the revocation list. CRL files whose nextUpdate fields are in the past, or that are issued by a different CA that happens to have the same name hash, are excluded.
+
+
+## RabbitMQ Authetication Mechanism 
+**EXTERNAL** Authentication Mechanism using x509 certifictae peer verification has been **enabled by default** in this example. If you wish to use **SASL PLAIN** authetication mechanism, please comment out line 6: `auth_mechanisms.1 = EXTERNAL` in the `rabbitmq.conf` file. 
 
 ```
 # enable this line for external authetication via certificates and SSL
@@ -30,6 +39,8 @@ auth_mechanisms.1 = EXTERNAL
 ```
 
 For more information regarding RabbitMQ Authetication Mechanism, please refer to [rabbitmq/access-control#mechanisms](https://www.rabbitmq.com/access-control.html#mechanisms)
+
+## Geting Started
 
 ### Start the RabbitMQ broker container
 1. using terminal, clone the repository to your computer: 
@@ -177,9 +188,10 @@ cert-gen\root\ca\intermediate-client\issuing-client\private
 cert-gen\root\ca\intermediate-client\issuing-server\private
 ```
 
+### Generating the CRLs 
 
 
-## Existing Issue 
+## Current Issue 
 
 Despite my best attempts, owing to my limited understanding of erlang, RabbitMQ and CRL, the CRL mechanism does not seem to be working. 
 
@@ -277,7 +289,11 @@ Client-2:
 pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
 ```
 
-## Other Attempts and Findings
+## Previous Attempts 
+
+
+
+## Other Findings
 
 1. Enable both the PLAIN and EXTERNAL Autehitcaiton Mechanism, with both user acess enabled: 
 
@@ -393,16 +409,5 @@ https://stackoverflow.com/questions/25889341/what-is-the-equivalent-of-unix-c-re
 https://github.com/erlang/otp/blob/master/lib/ssl/test/ssl_crl_SUITE.erl
 
 https://github.com/erlang/otp/blob/master/lib/public_key/src/pubkey_crl.erl
-
-https://www.erlang.org/doc/man/ssl.html
-
-```
-ssl_crl_hash_dir
-This module makes use of a directory where CRLs are stored in files named by the hash of the issuer name.
-
-The file names consist of eight hexadecimal digits followed by .rN, where N is an integer, e.g. 1a2b3c4d.r0. For the first version of the CRL, N starts at zero, and for each new version, N is incremented by one. The OpenSSL utility c_rehash creates symlinks according to this pattern.
-
-For a given hash value, this module finds all consecutive .r* files starting from zero, and those files taken together make up the revocation list. CRL files whose nextUpdate fields are in the past, or that are issued by a different CA that happens to have the same name hash, are excluded.
-```
 
 https://github.com/erlang/otp/issues/5300
