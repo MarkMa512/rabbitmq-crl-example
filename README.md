@@ -301,6 +301,7 @@ CRL file used: `broker\rabbit-1\crl-chain`
 
 I used the following command to generate the symblic link: 
 ```
+cd broker\rabbit-1\crl-chain
 for file in *.pem; do ln -s "$file" "$(openssl crl -hash -noout -in "$file")".0; done
 ```
 
@@ -316,6 +317,7 @@ CRL file used: `broker\rabbit-1\crl`
 
 I used the following command to generate the symbolic links: 
 ```
+cd broker\rabbit-1
 openssl rehash crl
 ```
 After importing the symbolic link and CRL file to broker ajusted the `advanced.config` file, if I try to use `client-0` to connect to the broker, this would lead to error: 
