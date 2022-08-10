@@ -356,6 +356,33 @@ I have attempted to use `c_rehash crl` command, but it does not seem to produce 
 ].
 ```
 
+## Troubleshoot: 
+### 1. Certificate Unkown Error
+Broker output: 
+```
+[notice] <0.1065.0> TLS server: In state wait_cert at ssl_handshake.erl:360 generated SERVER ALERT: Fatal - Certificate Unknown
+[notice] <0.1065.0>  - {failed_to_decode_certificate,
+[notice] <0.1065.0>        {{invalid_value,1},
+... 
+
+```
+
+Client output: 
+```
+pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_CERTIFICATE_UNKNOWN] sslv3 alert certificate unknown (_ssl.c:2548)')",)
+```
+
+#### Cause of the issue: 
+How macOS and RHEL handles line end differently. 
+
+#### Resolution: 
+Regenerate the Certificates
+
+See referrence here: [Configuring Git to handle line endings](https://docs.github.com/en/get-started/getting-started-with-git/configuring-git-to-handle-line-endings)
+
+### 2. Can't symlink issuing-client.crl.pem, Operation not supported
+
+
 ## Previous Attempts Archieve:  
 ### Attempt 1: Wrong module of *ssl_crl_cache* used. 
 
@@ -452,6 +479,11 @@ Client-2:
 pika.exceptions.IncompatibleProtocolError: StreamLostError: ("Stream connection lost: SSLError(1, '[SSL: SSLV3_ALERT_BAD_CERTIFICATE] sslv3 alert bad certificate (_ssl.c:2548)')",)
 ```
 
+### Attempt 4: Using a simpler certificate chain structure
+
+I have attempted to 
+
+Operation not supported. 
 
 ## Other Findings
 
